@@ -20,6 +20,7 @@ struct AddCertificateSheet: View {
                 Section {
                     TextField("Name", text: $name)
                         .autocorrectionDisabled()
+                        .submitLabel(.next)
                 } header: {
                     Text("CERTIFICATE NAME")
                         .font(.footnote)
@@ -35,7 +36,6 @@ struct AddCertificateSheet: View {
                         showingP12Picker = true
                     }
                     
-                    // بەکارهێنانی هێڵی نوێ بۆ ئەوەی ڕێک وەک وێنەکە دەربکەوێت
                     filePickerRow(
                         title: String(localized: "Provisioning Profile\n(.mobileprovision)"), 
                         selectedName: provisionURL?.lastPathComponent
@@ -44,6 +44,7 @@ struct AddCertificateSheet: View {
                     }
                     
                     SecureField("P12 Password", text: $password)
+                        .submitLabel(.done)
                 } header: {
                     Text("FILES")
                         .font(.footnote)
@@ -59,14 +60,14 @@ struct AddCertificateSheet: View {
                     }
                 }
             }
-            .siScreen()
+            .siScreen() // سیستەمی دیزاینی پڕۆژەکەت دەپارێزێت
             .presentationDragIndicator(.visible)
             .navigationTitle("Add Certificate")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
-                        .foregroundColor(SIColor.accent) // ڕەنگی تایبەتی پڕۆژەکەت (وەک پرتەقاڵی)
+                        .foregroundColor(SIColor.accent)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button {
@@ -80,7 +81,6 @@ struct AddCertificateSheet: View {
                         }
                     }
                     .disabled(!canAdd || isImporting)
-                    // ئەگەر زانیارییەکان تەواو نەبوون ڕەنگەکەی دەبێتە خۆڵەمێشی
                     .foregroundColor(canAdd ? SIColor.accent : .gray) 
                 }
             }
@@ -95,6 +95,7 @@ struct AddCertificateSheet: View {
                 }
             }
         }
+        .preferredColorScheme(.dark) // بۆ ئەوەی ڕێک وەک وێنەکە دەربکەوێت بە تاریکی
     }
 
     private var canAdd: Bool {
@@ -106,15 +107,18 @@ struct AddCertificateSheet: View {
             HStack {
                 Text(title)
                     .foregroundStyle(SIColor.textPrimary)
-                    .multilineTextAlignment(.leading) // ڕێگەدان بە دابەزین بۆ دێڕی خوارەوە
+                    .multilineTextAlignment(.leading)
                     .lineLimit(2)
+                
                 Spacer()
+                
                 Text(selectedName ?? String(localized: "Choose..."))
                     .foregroundStyle(SIColor.textSecondary)
                     .lineLimit(1)
-                    .truncationMode(.middle) // ئەگەر ناوی فایلەکە درێژبوو لە ناوەڕاستدا کورت دەکرێتەوە (وەک name...p12)
+                    .truncationMode(.middle)
             }
         }
+        .buttonStyle(.plain) // ئەمە زۆر گرنگە بۆ ئەوەی لەناو فۆڕمدا وەک دوگمەیەکی پرۆفێشناڵ کاربکات
     }
 
     private func addCertificate() {
