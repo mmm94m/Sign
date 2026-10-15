@@ -16,28 +16,46 @@ struct AddCertificateSheet: View {
     var body: some View {
         NavigationStack {
             Form {
+                // MARK: - Name Section
                 Section {
                     TextField("Name", text: $name)
                         .autocorrectionDisabled()
                 } header: {
-                    Text("Certificate Name")
+                    Text("CERTIFICATE NAME")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
                 }
 
+                // MARK: - Files Section
                 Section {
-                    filePickerRow(title: String(localized: "Certificate (.p12)"), selectedName: p12URL?.lastPathComponent) {
+                    filePickerRow(
+                        title: String(localized: "Certificate (.p12)"), 
+                        selectedName: p12URL?.lastPathComponent
+                    ) {
                         showingP12Picker = true
                     }
-                    filePickerRow(title: String(localized: "Provisioning Profile (.mobileprovision)"), selectedName: provisionURL?.lastPathComponent) {
+                    
+                    // بەکارهێنانی هێڵی نوێ بۆ ئەوەی ڕێک وەک وێنەکە دەربکەوێت
+                    filePickerRow(
+                        title: String(localized: "Provisioning Profile\n(.mobileprovision)"), 
+                        selectedName: provisionURL?.lastPathComponent
+                    ) {
                         showingProvisionPicker = true
                     }
+                    
                     SecureField("P12 Password", text: $password)
                 } header: {
-                    Text("Files")
+                    Text("FILES")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
                 }
 
+                // MARK: - Error Section
                 if let errorMessage {
                     Section {
-                        Text(errorMessage).foregroundStyle(SIColor.danger).font(SIFont.caption)
+                        Text(errorMessage)
+                            .foregroundStyle(SIColor.danger)
+                            .font(SIFont.caption)
                     }
                 }
             }
@@ -48,14 +66,22 @@ struct AddCertificateSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
+                        .foregroundColor(SIColor.accent) // ڕەنگی تایبەتی پڕۆژەکەت (وەک پرتەقاڵی)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button {
                         addCertificate()
                     } label: {
-                        if isImporting { ProgressView() } else { Text("Add") }
+                        if isImporting { 
+                            ProgressView() 
+                        } else { 
+                            Text("Add")
+                                .fontWeight(.semibold)
+                        }
                     }
                     .disabled(!canAdd || isImporting)
+                    // ئەگەر زانیارییەکان تەواو نەبوون ڕەنگەکەی دەبێتە خۆڵەمێشی
+                    .foregroundColor(canAdd ? SIColor.accent : .gray) 
                 }
             }
             .sheet(isPresented: $showingP12Picker) {
@@ -78,11 +104,15 @@ struct AddCertificateSheet: View {
     private func filePickerRow(title: String, selectedName: String?, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack {
-                Text(title).foregroundStyle(SIColor.textPrimary)
+                Text(title)
+                    .foregroundStyle(SIColor.textPrimary)
+                    .multilineTextAlignment(.leading) // ڕێگەدان بە دابەزین بۆ دێڕی خوارەوە
+                    .lineLimit(2)
                 Spacer()
-                Text(selectedName ?? String(localized: "Choose…"))
+                Text(selectedName ?? String(localized: "Choose..."))
                     .foregroundStyle(SIColor.textSecondary)
                     .lineLimit(1)
+                    .truncationMode(.middle) // ئەگەر ناوی فایلەکە درێژبوو لە ناوەڕاستدا کورت دەکرێتەوە (وەک name...p12)
             }
         }
     }
