@@ -34,11 +34,16 @@ struct SigningSheetView: View {
                         progressSection
                             .transition(.opacity.combined(with: .move(edge: .top)))
                     }
+                    
                     certificateSection
+                    
                     identitySection(entry: entry)
+                    
+                    // ئەم بەشە خۆی Tweaks و More Options لەخۆدەگرێت
                     SigningOptionsEditor(options: $options, certificateID: certificateID, layout: .compact)
                 }
             }
+            .formStyle(.grouped) // بەکارهێنانی ستایلی فەرمی فۆڕمەکان بۆ دیزاینێکی مۆدێرن
             .animation(.easeOut(duration: 0.25), value: isSigning)
             .siScreen()
             .presentationDragIndicator(.visible)
@@ -46,8 +51,9 @@ struct SigningSheetView: View {
             .navigationBarTitleDisplayMode(.inline)
             .disabled(isSigning)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") { dismiss() }
+                        .foregroundColor(.orange) // ڕەنگی پرتەقاڵی بۆ دوگمەی کانسەڵ
                 }
                 ToolbarItem(placement: .primaryAction) {
                     presetMenu
@@ -60,9 +66,11 @@ struct SigningSheetView: View {
                             ProgressView()
                         } else {
                             Text("Sign")
+                                .fontWeight(.semibold)
                         }
                     }
                     .disabled(certificateID == nil || isSigning)
+                    .foregroundColor((certificateID == nil || isSigning) ? .gray : .orange) // ڕەنگی دوگمەی Sign بەپێی کات دەگۆڕێت
                 }
             }
             .onAppear(perform: prepareDefaults)
@@ -77,6 +85,7 @@ struct SigningSheetView: View {
                 }
             }
         }
+        .preferredColorScheme(.dark) // بۆ دڵنیابوون لەوەی هەمیشە وەک وێنەکە تاریک دەبێت
     }
 
     private var presetMenu: some View {
@@ -99,22 +108,33 @@ struct SigningSheetView: View {
             }
         } label: {
             Image(systemName: "slider.horizontal.3")
+                .foregroundColor(.orange) // ئایکۆنی ڕێکخستنەکان بە ڕەنگی پرتەقاڵی
         }
         .accessibilityLabel(Text("Presets"))
     }
 
     private var certificateSection: some View {
-        Section {
+        Group {
             if certificateStore.certificates.isEmpty {
-                Text("Add a certificate in Settings first.")
-                    .font(SIFont.caption)
-                    .foregroundStyle(SIColor.danger)
+                Section {
+                    Text("Add a certificate in Settings first.")
+                        .font(.footnote)
+                        .foregroundColor(.red) // دیزاینی سوور ڕێک وەک وێنەکە
+                }
             } else {
-                Picker("Certificate", selection: $certificateID) {
-                    ForEach(certificateStore.certificates) { certificate in
-                        Text(certificate.name)
-                            .tag(UUID?.some(certificate.id))
+                Section {
+                    Picker("Certificate", selection: $certificateID) {
+                        ForEach(certificateStore.certificates) { certificate in
+                            Text(certificate.name)
+                                .tag(UUID?.some(certificate.id))
+                        }
                     }
+                    .tint(.orange)
+                } header: {
+                    Text("CERTIFICATE")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
+                        .textCase(.uppercase)
                 }
             }
         }
@@ -135,6 +155,7 @@ struct SigningSheetView: View {
                     Text(rule.displayName).tag(rule)
                 }
             }
+            .tint(.orange) // ڕەنگی هەڵبژاردنەکان (وەک Keep Original) بە پرتەقاڵی
 
             switch options.bundleIdentifierRule {
             case .appendSuffix:
@@ -150,6 +171,7 @@ struct SigningSheetView: View {
                         options.bundleIdentifier = SigningOptions.bundleIdentifier(fromCertificateID: certificateBundleID, original: original)
                     } label: {
                         Label("Use Bundle ID from Certificate", systemImage: "checkmark.seal")
+                            .foregroundColor(.orange)
                     }
                 }
             default:
@@ -166,7 +188,10 @@ struct SigningSheetView: View {
             TextField("Minimum iOS Version", text: $options.minimumOSVersion)
                 .keyboardType(.numbersAndPunctuation)
         } header: {
-            Text("Identity")
+            Text("IDENTITY")
+                .font(.footnote)
+                .foregroundColor(.secondary)
+                .textCase(.uppercase)
         } footer: {
             identityFooter(original: original)
         }
@@ -174,7 +199,7 @@ struct SigningSheetView: View {
 
     @ViewBuilder
     private func identityFooter(original: String) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: 4) {
             if options.bundleIdentifierRule == .randomSuffix {
                 Text("Original bundle ID: \(original)")
             } else {
@@ -193,13 +218,16 @@ struct SigningSheetView: View {
                 Text("Couldn't read a bundle ID from this certificate's profile, so the original is kept.")
             }
         }
+        .font(.caption)
+        .foregroundColor(.secondary)
     }
 
     private var progressSection: some View {
         Section {
-            HStack(spacing: SISpacing.sm) {
+            HStack(spacing: 12) {
                 if jobStatus.isInProgress {
                     ProgressView()
+                        .tint(.orange)
                 }
                 signingProgressFooter
                     .transition(.opacity)
@@ -220,10 +248,12 @@ struct SigningSheetView: View {
         case .done(let seconds):
             if seconds < 0.05 {
                 Text("Done instantly from cache.")
+                    .foregroundColor(.green)
             } else {
                 Text(String(format: String(localized: "Done in %.1fs."), seconds))
+                    .foregroundColor(.green)
             }
-        case .failed(let message): Text(message).foregroundStyle(SIColor.danger)
+        case .failed(let message): Text(message).foregroundColor(.red)
         }
     }
 
