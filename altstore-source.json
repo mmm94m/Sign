@@ -15,11 +15,19 @@
       "category": "utilities",
       "version": "1.7.0",
       "versionDate": "2026-10-15",
-      "versionDescription": "- Update BugReportView.swift\n- Update AltStore source for build 3\n- Update AddCertificateSheet.swift\n- Update CertificatesView.swift\n- Update AltStore source for build 1\n- Update SettingsView.swift\n- Update AltStore source for build 35",
-      "downloadURL": "https://github.com/mmm94m/Sign/releases/download/build-4/SwiftIPA-unsigned.ipa",
-      "size": 3249890,
+      "versionDescription": "- Update ChangelogView.swift\n- Update AltStore source for build 4\n- Update BugReportView.swift\n- Update AltStore source for build 3\n- Update AddCertificateSheet.swift\n- Update CertificatesView.swift\n- Update AltStore source for build 1\n- Update SettingsView.swift\n- Update AltStore source for build 35",
+      "downloadURL": "https://github.com/mmm94m/Sign/releases/download/build-5/SwiftIPA-unsigned.ipa",
+      "size": 3255125,
       "minOSVersion": "16.0",
       "versions": [
+        {
+          "version": "1.7.0",
+          "date": "2026-10-15",
+          "localizedDescription": "- Update ChangelogView.swift\n- Update AltStore source for build 4\n- Update BugReportView.swift\n- Update AltStore source for build 3\n- Update AddCertificateSheet.swift\n- Update CertificatesView.swift\n- Update AltStore source for build 1\n- Update SettingsView.swift\n- Update AltStore source for build 35",
+          "downloadURL": "https://github.com/mmm94m/Sign/releases/download/build-5/SwiftIPA-unsigned.ipa",
+          "size": 3255125,
+          "minOSVersion": "16.0"
+        },
         {
           "version": "1.7.0",
           "date": "2026-10-15",
