@@ -1,10 +1,10 @@
 import SwiftUI
 import UIKit
 
-/// Builds a prefilled GitHub issue and opens it in the browser, so reporting
+/// Builds a prefilled report and opens Telegram, so reporting
 /// a bug is one tap after writing it down.
 struct BugReportView: View {
-    static let repositoryURL = URL(string: "https://github.com/xsxs18-dev/SwiftIPA")!
+    static let telegramURL = URL(string: "https://t.me/ashtemobile")!
 
     enum Kind: String, CaseIterable, Identifiable {
         case bug
@@ -21,19 +21,12 @@ struct BugReportView: View {
             }
         }
 
-        var label: String {
-            switch self {
-            case .bug: return "bug"
-            case .feature: return "enhancement"
-            case .question: return "question"
-            }
-        }
-
+        // زیادکردنی ئیمۆجی بۆ ئەوەی لە تێلیگرام جوانتر دەربکەوێت
         var titlePrefix: String {
             switch self {
-            case .bug: return "[Bug]"
-            case .feature: return "[Feature]"
-            case .question: return "[Question]"
+            case .bug: return "🐛 Bug:"
+            case .feature: return "✨ Feature:"
+            case .question: return "❓ Question:"
             }
         }
     }
@@ -97,6 +90,7 @@ struct BugReportView: View {
 
             Section {
                 Toggle("Include Device Info", isOn: $includeDeviceInfo)
+                    .tint(SIColor.accent)
                 if includeDeviceInfo {
                     Text(Self.deviceInfo)
                         .font(SIFont.mono)
@@ -104,21 +98,29 @@ struct BugReportView: View {
                         .textSelection(.enabled)
                 }
             } footer: {
-                Text("Only what's shown here is added. Nothing is sent until you submit the issue on GitHub.")
+                Text("Only what's shown here is added to your report.")
             }
 
             Section {
                 Button {
-                    openURL(issueURL)
+                    // ١. کۆپیکردنی ڕاپۆرتەکە بۆ کلیپبۆردی مۆبایلەکە
+                    UIPasteboard.general.string = generatedReport
+                    
+                    // ٢. کردنەوەی چەناڵی تێلیگرام
+                    openURL(Self.telegramURL)
                 } label: {
-                    Label("Open Issue on GitHub", systemImage: "arrow.up.right.square")
+                    HStack(spacing: 12) {
+                        Image(systemName: "paperplane.fill")
+                        Text("Copy & Send via Telegram")
+                            .fontWeight(.medium)
+                    }
+                    // گۆڕینی ڕەنگ بۆ شینی تێلیگرام ئەگەر فۆڕمەکە پڕکرابێتەوە
+                    .foregroundColor(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? .gray : Color(red: 0.16, green: 0.58, blue: 0.94))
                 }
                 .disabled(title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                Link(destination: Self.repositoryURL.appendingPathComponent("issues")) {
-                    Label("View Open Issues", systemImage: "list.bullet")
-                }
+                
             } footer: {
-                Text("Opens github.com with the issue already filled in. You need a GitHub account to submit it.")
+                Text("This will copy your report to the clipboard and open Telegram so you can paste it directly into the support chat.")
             }
         }
         .siScreen()
@@ -126,37 +128,23 @@ struct BugReportView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    private var issueURL: URL {
-        var body = ""
+    // ئامادەکردنی دەقی ڕاپۆرتەکە بۆ ئەوەی لە تێلیگرام بە جوانی دەربکەوێت
+    private var generatedReport: String {
+        var body = "\(kind.titlePrefix) \(title.trimmingCharacters(in: .whitespacesAndNewlines))\n\n"
+        
         let trimmedDetails = details.trimmingCharacters(in: .whitespacesAndNewlines)
-        body += "### Description\n\n\(trimmedDetails.isEmpty ? "_No description_" : trimmedDetails)\n\n"
+        body += "📝 Description:\n\(trimmedDetails.isEmpty ? "No description provided." : trimmedDetails)\n\n"
+        
         let trimmedSteps = steps.trimmingCharacters(in: .whitespacesAndNewlines)
         if kind == .bug, !trimmedSteps.isEmpty {
-            body += "### Steps to reproduce\n\n\(trimmedSteps)\n\n"
+            body += "🔄 Steps to reproduce:\n\(trimmedSteps)\n\n"
         }
+        
         if includeDeviceInfo {
-            body += "### Device\n\n```\n\(Self.deviceInfo)\n```\n"
+            body += "📱 Device Info:\n\(Self.deviceInfo)\n"
         }
-        body += "\n_Sent from SwiftIPA's bug reporter._"
-
-        // Browsers and GitHub cut off very long URLs.
-        if body.count > 2500 {
-            body = String(body.prefix(2500)) + "\n…"
-        }
-
-        let summary = title.trimmingCharacters(in: .whitespacesAndNewlines)
-        // Encode everything but unreserved characters, so "&", "=", "+" and "#"
-        // in the text can't break the query.
-        let unreserved = CharacterSet(charactersIn: "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._~")
-        func encode(_ value: String) -> String {
-            value.addingPercentEncoding(withAllowedCharacters: unreserved) ?? ""
-        }
-        let query = [
-            "title=" + encode("\(kind.titlePrefix) \(summary)"),
-            "body=" + encode(body),
-            "labels=" + encode(kind.label),
-        ].joined(separator: "&")
-        return URL(string: Self.repositoryURL.absoluteString + "/issues/new?" + query) ?? Self.repositoryURL
+        
+        return body
     }
 
     static var deviceInfo: String {
@@ -170,7 +158,7 @@ struct BugReportView: View {
             "Device: \(modelIdentifier)",
             "Language: \(Locale.preferredLanguages.first ?? "?")",
             "Certificates: \(CertificateStore.shared.certificates.count)",
-            "Tweaks: \(DylibLibraryStore.shared.dylibs.count)",
+            "Tweaks: \(DylibLibraryStore.shared.dylibs.count)"
         ].joined(separator: "\n")
     }
 
