@@ -14,19 +14,29 @@ struct AddSourceSheet: View {
                         .keyboardType(.URL)
                         .textInputAutocapitalization(.never)
                         .autocorrectionDisabled()
+                        .submitLabel(.go) // کیبۆردەکە دوگمەی Go نیشان دەدات
                         .disabled(isLoading)
+                        .onSubmit {
+                            // کاتێک لە کیبۆردەکە Go دادەگریت، ڕاستەوخۆ هەوڵی زیادکردن دەدات
+                            if canAdd { add() }
+                        }
                 } header: {
-                    Text("Repository URL")
+                    Text("REPOSITORY URL")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
                 } footer: {
                     Text("Works with AltStore and ESign-format sources.")
                 }
 
                 if let errorMessage {
                     Section {
-                        Text(errorMessage).foregroundStyle(SIColor.danger).font(SIFont.caption)
+                        Text(errorMessage)
+                            .foregroundStyle(SIColor.danger)
+                            .font(.caption)
                     }
                 }
             }
+            .formStyle(.grouped) // ستایلی فەرمی و مۆدێرنی فۆڕم
             .siScreen()
             .presentationDragIndicator(.visible)
             .navigationTitle("Add Source")
@@ -34,17 +44,30 @@ struct AddSourceSheet: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
+                        .foregroundColor(SIColor.accent) // ڕەنگی تایبەتی پڕۆژەکەت (پرتەقاڵی)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button {
                         add()
                     } label: {
-                        if isLoading { ProgressView() } else { Text("Add") }
+                        if isLoading { 
+                            ProgressView() 
+                        } else { 
+                            Text("Add")
+                                .fontWeight(.semibold) 
+                        }
                     }
-                    .disabled(URL(string: urlText) == nil || isLoading)
+                    .disabled(!canAdd || isLoading)
+                    .foregroundColor(canAdd ? SIColor.accent : .gray) // کاتێک لینکەکە دروستە ڕەنگەکەی دەگەشێتەوە
                 }
             }
         }
+        .preferredColorScheme(.dark)
+    }
+
+    // پشکنین بۆ ئەوەی بزانین لینکەکە نوسراوە و دروستە
+    private var canAdd: Bool {
+        URL(string: urlText) != nil && !urlText.trimmingCharacters(in: .whitespaces).isEmpty
     }
 
     private func add() {
