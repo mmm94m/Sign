@@ -1,38 +1,41 @@
 import SwiftUI
-import UIKit // ئەمە زیادکرا بۆ چارەسەری ئیرۆری ڕەنگەکان
+import UIKit
 
 struct SourcesView: View {
     @ObservedObject private var sourceStore = SourceStore.shared
     @State private var showingAddSheet = false
-    @State private var isAutoLoading = false // بۆ نیشاندانی لۆدینگی ئۆتۆماتیکی
+    @State private var isAutoLoading = false
 
     // بەستەری تایبەت بە پڕۆژەکەت
     let defaultSourceURL = URL(string: "https://github.com/ios94/ashtejson/raw/refs/heads/main/ashtemobile94.json")!
 
     var body: some View {
         Group {
-            if sourceStore.sources.isEmpty {
+            // ١. ئەگەر سۆرسەکە هەبوو، یەکسەر بەرنامەکان نیشان بدە!
+            if let firstSource = sourceStore.sources.first {
+                SourceDetailView(sourceID: firstSource.id)
+            } else {
+                // ٢. ئەگەر سۆرسەکە نەبوو یان خەریکی لۆدکردن بوو
                 if isAutoLoading {
                     loadingState
                 } else {
                     emptyState
                 }
-            } else {
-                sourceList
             }
         }
         .siScreen()
-        .navigationTitle("Sources")
-        .navigationDestination(for: RepositorySource.self) { source in
-            SourceDetailView(sourceID: source.id)
-        }
+        // لابردنی تایتڵی Sources کاتێک دەچێتە ناو بەرنامەکان
+        .navigationTitle(sourceStore.sources.isEmpty ? "Sources" : "")
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    showingAddSheet = true
-                } label: {
-                    Image(systemName: "plus")
-                        .foregroundColor(.orange) // ڕەنگی مۆدێرنی پرتەقاڵی
+            // تەنها کاتێک سۆرس نییە دوگمەی (+) نیشان بدە
+            if sourceStore.sources.isEmpty {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        showingAddSheet = true
+                    } label: {
+                        Image(systemName: "plus")
+                            .foregroundColor(.orange)
+                    }
                 }
             }
         }
@@ -46,7 +49,6 @@ struct SourcesView: View {
 
     // MARK: - Auto Load Logic
     private func autoLoadDefaultSource() {
-        // ئەگەر سۆرسەکان بەتاڵ بوون، با ڕاستەوخۆ سۆرسەکەی تۆ ئاد بکات
         guard sourceStore.sources.isEmpty else { return }
         
         isAutoLoading = true
@@ -65,32 +67,13 @@ struct SourcesView: View {
         }
     }
 
-    // MARK: - Views
-    private var sourceList: some View {
-        List {
-            ForEach(sourceStore.sources) { source in
-                NavigationLink(value: source) {
-                    SourceRow(source: source)
-                }
-                .listRowInsets(EdgeInsets(top: 6, leading: 16, bottom: 6, trailing: 16))
-                .listRowBackground(Color.clear)
-                .listRowSeparator(.hidden)
-            }
-            .onDelete { offsets in
-                for index in offsets { 
-                    sourceStore.removeSource(sourceStore.sources[index]) 
-                }
-            }
-        }
-        .listStyle(.plain)
-        .padding(.top, 8)
-    }
-
-    // دیزاینی کاتی لۆدکردنی ئۆتۆماتیکی
+    // MARK: - Loading View
     private var loadingState: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 20) {
             ProgressView()
                 .scaleEffect(1.5)
+                .tint(.orange) // ڕەنگی لۆدینگی پرتەقاڵی
+            
             Text("Loading AshteMobile Apps...")
                 .font(.headline)
                 .foregroundColor(.secondary)
@@ -98,7 +81,7 @@ struct SourcesView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    // دیزاینی مۆدێرن بۆ کاتی بەتاڵی (ئەگەر ئینتەرنێت نەبوو یان سڕییەوە)
+    // MARK: - Empty State View
     private var emptyState: some View {
         VStack(spacing: 16) {
             Image(systemName: "tray.fill")
@@ -131,64 +114,5 @@ struct SourcesView: View {
             .padding(.top, 16)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-}
-
-struct SourceRow: View {
-    let source: RepositorySource
-
-    var body: some View {
-        HStack(spacing: 16) {
-            AsyncImage(url: source.iconURL) { phase in
-                switch phase {
-                case .empty:
-                    ProgressView()
-                        .frame(width: 50, height: 50)
-                case .success(let image):
-                    image
-                        .resizable()
-                        .scaledToFill()
-                        .frame(width: 50, height: 50)
-                        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                case .failure:
-                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(Color(uiColor: .secondarySystemFill)) // ئێرۆرەکە لێرەدا چارەسەرکرا
-                        .frame(width: 50, height: 50)
-                        .overlay(
-                            Image(systemName: "tray.fill")
-                                .foregroundColor(.gray)
-                        )
-                @unknown default:
-                    EmptyView()
-                }
-            }
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text(source.name)
-                    .font(.headline)
-                    .foregroundColor(.primary)
-                
-                Text(source.subtitle ?? source.url.host ?? "Unknown")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
-            }
-            
-            Spacer()
-            
-            // نیشاندانی ژمارەی ئەپەکان بە شێوازێکی جوان
-            Text("\(source.appCount) Apps")
-                .font(.caption)
-                .fontWeight(.medium)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 5)
-                .background(Color.orange.opacity(0.15))
-                .foregroundColor(.orange)
-                .clipShape(Capsule())
-        }
-        .padding(12)
-        .background(Color(uiColor: .secondarySystemGroupedBackground)) // ئێرۆرەکە لێرەدا چارەسەرکرا
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
     }
 }
