@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit // ئەمە زیادکرا بۆ چارەسەری ئیرۆری ڕەنگەکان
 
 struct SourcesView: View {
     @ObservedObject private var sourceStore = SourceStore.shared
@@ -51,7 +52,6 @@ struct SourcesView: View {
         isAutoLoading = true
         Task {
             do {
-                // تێبینی: لێرەدا واگریمانە کراوە کە مێتۆدی ئادکردن ناوی addSource یە
                 _ = try await sourceStore.addSource(url: defaultSourceURL)
                 await MainActor.run {
                     isAutoLoading = false
@@ -152,7 +152,7 @@ struct SourceRow: View {
                         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                 case .failure:
                     RoundedRectangle(cornerRadius: 12, style: .continuous)
-                        .fill(Color(UIColor.secondarySystemFill))
+                        .fill(Color(uiColor: .secondarySystemFill)) // ئێرۆرەکە لێرەدا چارەسەرکرا
                         .frame(width: 50, height: 50)
                         .overlay(
                             Image(systemName: "tray.fill")
@@ -187,7 +187,7 @@ struct SourceRow: View {
                 .clipShape(Capsule())
         }
         .padding(12)
-        .background(Color(UIColor.secondarySystemGroupedBackground))
+        .background(Color(uiColor: .secondarySystemGroupedBackground)) // ئێرۆرەکە لێرەدا چارەسەرکرا
         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
         .shadow(color: Color.black.opacity(0.05), radius: 5, x: 0, y: 2)
     }
