@@ -38,6 +38,23 @@ private enum ResetAction: Identifiable, Equatable {
     }
 }
 
+// MARK: - Reusable Settings Icon Badge
+private struct SettingsIcon: View {
+    let systemName: String
+    let backgroundColor: Color
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                .fill(backgroundColor.gradient)
+                .frame(width: 28, height: 28)
+            Image(systemName: systemName)
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.white)
+        }
+    }
+}
+
 struct SettingsView: View {
     @ObservedObject private var themeManager = ThemeManager.shared
     @ObservedObject private var certificateStore = CertificateStore.shared
@@ -49,86 +66,219 @@ struct SettingsView: View {
 
     var body: some View {
         List {
+            // MARK: - Signing
             Section {
                 NavigationLink {
                     CertificatesView()
                 } label: {
-                    LabeledContent("Certificates", value: "\(certificateStore.certificates.count)")
+                    HStack(spacing: 12) {
+                        SettingsIcon(systemName: "checkmark.seal.fill", backgroundColor: .orange)
+                        Text("Certificates")
+                            .foregroundStyle(SIColor.textPrimary)
+                        Spacer()
+                        Text("\(certificateStore.certificates.count)")
+                            .font(.subheadline)
+                            .foregroundStyle(SIColor.textSecondary)
+                    }
                 }
+
                 NavigationLink {
                     TweaksLibraryView()
                 } label: {
-                    LabeledContent("Tweak Library", value: "\(dylibStore.dylibs.count)")
+                    HStack(spacing: 12) {
+                        SettingsIcon(systemName: "shippingbox.fill", backgroundColor: .purple)
+                        Text("Tweak Library")
+                            .foregroundStyle(SIColor.textPrimary)
+                        Spacer()
+                        Text("\(dylibStore.dylibs.count)")
+                            .font(.subheadline)
+                            .foregroundStyle(SIColor.textSecondary)
+                    }
                 }
-                NavigationLink("Signing Presets") { PresetsView() }
-                NavigationLink("Default Signing Options") { DefaultSigningOptionsView() }
+
+                NavigationLink {
+                    PresetsView()
+                } label: {
+                    HStack(spacing: 12) {
+                        SettingsIcon(systemName: "slider.horizontal.3", backgroundColor: .blue)
+                        Text("Signing Presets")
+                            .foregroundStyle(SIColor.textPrimary)
+                    }
+                }
+
+                NavigationLink {
+                    DefaultSigningOptionsView()
+                } label: {
+                    HStack(spacing: 12) {
+                        SettingsIcon(systemName: "gearshape.2.fill", backgroundColor: .gray)
+                        Text("Default Signing Options")
+                            .foregroundStyle(SIColor.textPrimary)
+                    }
+                }
             } header: {
                 Text("Signing")
             }
 
+            // MARK: - Appearance
             Section {
                 NavigationLink {
                     ThemePickerView()
                 } label: {
-                    HStack {
+                    HStack(spacing: 12) {
+                        SettingsIcon(systemName: "paintpalette.fill", backgroundColor: .pink)
                         Text("Theme")
+                            .foregroundStyle(SIColor.textPrimary)
                         Spacer()
-                        Circle()
-                            .fill(SIColor.accent)
-                            .frame(width: 10, height: 10)
-                        Text(themeManager.current.id.displayName)
-                            .foregroundStyle(SIColor.textSecondary)
+                        HStack(spacing: 6) {
+                            Circle()
+                                .fill(SIColor.accent)
+                                .frame(width: 8, height: 8)
+                            Text(themeManager.current.id.displayName)
+                                .font(.subheadline)
+                                .foregroundStyle(SIColor.textSecondary)
+                        }
                     }
                 }
             } header: {
                 Text("Appearance")
             }
 
+            // MARK: - Cache
             Section {
-                LabeledContent("Instant-Resign Cache", value: ByteCountFormatter.string(fromByteCount: cacheSize, countStyle: .file))
-                Button("Clear Cache", role: .destructive) {
+                HStack(spacing: 12) {
+                    SettingsIcon(systemName: "internaldrive.fill", backgroundColor: .teal)
+                    Text("Instant-Resign Cache")
+                        .foregroundStyle(SIColor.textPrimary)
+                    Spacer()
+                    Text(ByteCountFormatter.string(fromByteCount: cacheSize, countStyle: .file))
+                        .font(.subheadline)
+                        .foregroundStyle(SIColor.textSecondary)
+                }
+
+                Button(role: .destructive) {
                     SigningCache.shared.clear()
                     cacheSize = 0
+                } label: {
+                    HStack(spacing: 12) {
+                        SettingsIcon(systemName: "trash.fill", backgroundColor: .red)
+                        Text("Clear Cache")
+                            .fontWeight(.medium)
+                        Spacer()
+                    }
                 }
             } header: {
                 Text("Cache")
             }
 
+            // MARK: - Support & Community
             Section {
-                NavigationLink("Bugs & Issues") { BugReportView() }
-                NavigationLink("Changelog") { ChangelogView() }
-                Link("Source on GitHub", destination: BugReportView.repositoryURL)
+                NavigationLink {
+                    BugReportView()
+                } label: {
+                    HStack(spacing: 12) {
+                        SettingsIcon(systemName: "ladybug.fill", backgroundColor: .red)
+                        Text("Bugs & Issues")
+                            .foregroundStyle(SIColor.textPrimary)
+                    }
+                }
+
+                NavigationLink {
+                    ChangelogView()
+                } label: {
+                    HStack(spacing: 12) {
+                        SettingsIcon(systemName: "sparkles", backgroundColor: .yellow)
+                        Text("Changelog")
+                            .foregroundStyle(SIColor.textPrimary)
+                    }
+                }
+
+                Link(destination: URL(string: "https://t.me/ashtemobile")!) {
+                    HStack(spacing: 12) {
+                        SettingsIcon(systemName: "paperplane.fill", backgroundColor: Color(red: 0.16, green: 0.58, blue: 0.94))
+                        Text("Telegram Channel")
+                            .foregroundStyle(SIColor.textPrimary)
+                        Spacer()
+                        Image(systemName: "arrow.up.right")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(SIColor.textSecondary)
+                    }
+                }
             } header: {
                 Text("Support")
             }
 
+            // MARK: - About & Updates
             Section {
-                LabeledContent("Version", value: versionString)
+                HStack(spacing: 12) {
+                    SettingsIcon(systemName: "info.circle.fill", backgroundColor: .cyan)
+                    Text("Version")
+                        .foregroundStyle(SIColor.textPrimary)
+                    Spacer()
+                    Text(versionString)
+                        .font(.subheadline)
+                        .foregroundStyle(SIColor.textSecondary)
+                }
+
                 Button {
                     checkForUpdate()
                 } label: {
-                    if isCheckingUpdate {
-                        ProgressView()
-                    } else {
+                    HStack(spacing: 12) {
+                        SettingsIcon(systemName: "arrow.triangle.2.circlepath", backgroundColor: .green)
                         Text("Check for Updates")
+                            .foregroundStyle(SIColor.textPrimary)
+                        Spacer()
+                        if isCheckingUpdate {
+                            ProgressView()
+                                .controlSize(.small)
+                        }
                     }
                 }
+                .disabled(isCheckingUpdate)
+
                 if let updateResult {
                     if updateResult.isUpdateAvailable {
-                        Link("Update to \(updateResult.latestVersion) available", destination: updateResult.releaseURL)
+                        Link(destination: updateResult.releaseURL) {
+                            HStack(spacing: 12) {
+                                SettingsIcon(systemName: "arrow.down.app.fill", backgroundColor: SIColor.accent)
+                                Text("Update to \(updateResult.latestVersion)")
+                                    .fontWeight(.medium)
+                                Spacer()
+                                Image(systemName: "arrow.up.right")
+                                    .font(.system(size: 13, weight: .semibold))
+                            }
+                        }
                     } else {
-                        Text("You're up to date.").foregroundStyle(SIColor.textSecondary)
+                        HStack {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.green)
+                            Text("You're up to date.")
+                                .foregroundStyle(SIColor.textSecondary)
+                                .font(.subheadline)
+                        }
+                        .padding(.vertical, 2)
                     }
                 }
+
                 if let updateError {
-                    Text(updateError).foregroundStyle(SIColor.danger).font(SIFont.caption)
+                    Text(updateError)
+                        .foregroundStyle(SIColor.danger)
+                        .font(SIFont.caption)
                 }
             } header: {
                 Text("About")
             }
 
+            // MARK: - Storage & Advanced
             Section {
-                NavigationLink("Storage & Reset") { StorageResetView() }
+                NavigationLink {
+                    StorageResetView()
+                } label: {
+                    HStack(spacing: 12) {
+                        SettingsIcon(systemName: "cylinder.split.1x2.fill", backgroundColor: .orange)
+                        Text("Storage & Reset")
+                            .foregroundStyle(SIColor.textPrimary)
+                    }
+                }
             }
         }
         .listStyle(.insetGrouped)
@@ -172,18 +322,22 @@ private struct ThemePickerView: View {
                 Button {
                     themeManager.select(id)
                 } label: {
-                    HStack {
+                    HStack(spacing: 14) {
                         Circle()
                             .fill(SITheme.theme(for: id).accent)
-                            .frame(width: 14, height: 14)
+                            .frame(width: 16, height: 16)
                         Text(id.displayName)
                             .foregroundStyle(SIColor.textPrimary)
                         Spacer()
                         if themeManager.current.id == id {
-                            Image(systemName: "checkmark").foregroundStyle(SIColor.accent)
+                            Image(systemName: "checkmark")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundStyle(SIColor.accent)
                         }
                     }
+                    .contentShape(Rectangle())
                 }
+                .buttonStyle(.plain)
             }
         }
         .listStyle(.insetGrouped)
@@ -202,17 +356,57 @@ private struct StorageResetView: View {
                 Button {
                     openAppFolder()
                 } label: {
-                    Label("View App Folder", systemImage: "folder")
+                    HStack(spacing: 12) {
+                        SettingsIcon(systemName: "folder.fill", backgroundColor: .blue)
+                        Text("View App Folder")
+                            .foregroundStyle(SIColor.textPrimary)
+                        Spacer()
+                        Image(systemName: "arrow.up.right")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(SIColor.textSecondary)
+                    }
                 }
             } footer: {
                 Text("Opens SwiftIPA's Documents folder in the Files app — imported and signed IPAs, certificates, tweaks, and presets all live there.")
             }
 
             Section {
-                Button("Remove All Signed Apps", role: .destructive) { pendingReset = .signedApps }
-                Button("Remove All Imported Apps", role: .destructive) { pendingReset = .importedApps }
-                Button("Remove All Certificates", role: .destructive) { pendingReset = .certificates }
-                Button("Reset Everything", role: .destructive) { pendingReset = .everything }
+                Button(role: .destructive) {
+                    pendingReset = .signedApps
+                } label: {
+                    HStack(spacing: 12) {
+                        SettingsIcon(systemName: "trash", backgroundColor: .red.opacity(0.8))
+                        Text("Remove All Signed Apps")
+                    }
+                }
+
+                Button(role: .destructive) {
+                    pendingReset = .importedApps
+                } label: {
+                    HStack(spacing: 12) {
+                        SettingsIcon(systemName: "doc.badge.arrow.up", backgroundColor: .red.opacity(0.8))
+                        Text("Remove All Imported Apps")
+                    }
+                }
+
+                Button(role: .destructive) {
+                    pendingReset = .certificates
+                } label: {
+                    HStack(spacing: 12) {
+                        SettingsIcon(systemName: "xmark.seal", backgroundColor: .red.opacity(0.8))
+                        Text("Remove All Certificates")
+                    }
+                }
+
+                Button(role: .destructive) {
+                    pendingReset = .everything
+                } label: {
+                    HStack(spacing: 12) {
+                        SettingsIcon(systemName: "exclamationmark.triangle.fill", backgroundColor: .red)
+                        Text("Reset Everything")
+                            .fontWeight(.semibold)
+                    }
+                }
             } header: {
                 Text("Reset")
             } footer: {
