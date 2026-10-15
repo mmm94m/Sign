@@ -23,6 +23,7 @@ struct CertificatesView: View {
                     showingAddSheet = true
                 } label: {
                     Image(systemName: "plus")
+                        .foregroundColor(.orange)
                 }
             }
         }
@@ -49,14 +50,37 @@ struct CertificatesView: View {
         .listStyle(.plain)
     }
 
+    // دیزاینی مۆدێرن بۆ کاتی نەبوونی هیچ بڕوانامەیەک
     private var emptyState: some View {
-        SIEmptyState(
-            systemImage: "checkmark.seal",
-            title: "No certificates yet",
-            message: "Import a .p12 and its matching .mobileprovision to start signing."
-        ) {
-            Button("Add Certificate") { showingAddSheet = true }
-                .buttonStyle(.siPrimary)
+        VStack(spacing: 16) {
+            Image(systemName: "checkmark.seal")
+                .font(.system(size: 60, weight: .light))
+                .foregroundColor(.secondary)
+                .padding(.bottom, 8)
+
+            Text("No certificates yet")
+                .font(.title2)
+                .fontWeight(.bold)
+
+            Text("Import a .p12 and its matching .mobileprovision to start signing.")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 32)
+
+            Button {
+                showingAddSheet = true
+            } label: {
+                Text("Add Certificate")
+                    .font(.headline)
+                    .foregroundColor(.black)
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.orange)
+                    .cornerRadius(10)
+            }
+            .padding(.horizontal, 40)
+            .padding(.top, 16)
         }
     }
 }
@@ -67,16 +91,16 @@ struct CertificateRow: View {
 
     var body: some View {
         HStack(spacing: SISpacing.md) {
-            Image(systemName: "checkmark.seal")
-                .font(.title3)
-                .foregroundStyle(SIColor.accent)
+            Image(systemName: "checkmark.seal.fill")
+                .font(.title2)
+                .foregroundStyle(Color.orange) // گۆڕینی ڕەنگی ئایکۆن بۆ پرتەقاڵی
                 .frame(width: 32)
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
                     Text(certificate.name).font(SIFont.headline)
                     if isDefault {
-                        StatusBadge(text: String(localized: "Default"), color: SIColor.accent)
+                        StatusBadge(text: String(localized: "Default"), color: .orange)
                     }
                 }
                 Text(certificate.displayExpiry).font(SIFont.caption).foregroundStyle(SIColor.textSecondary)
@@ -84,7 +108,7 @@ struct CertificateRow: View {
             Spacer()
             CertificateHealthBadge(health: certificate.health)
         }
-        .padding(SISpacing.sm + 2)
+        .padding(SISpacing.sm + 4)
         .siCard()
     }
 }
