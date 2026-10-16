@@ -9,6 +9,7 @@ struct SourceDetailView: View {
     @State private var downloadedBytes: Int64 = 0
     @State private var errorMessage: String?
     @State private var signEntryID: UUID?
+    @State private var showingInstall = false
 
     private var source: RepositorySource? {
         sourceStore.sources.first { $0.id == sourceID }
@@ -42,9 +43,21 @@ struct SourceDetailView: View {
         }
         .sheet(isPresented: Binding(get: { signEntryID != nil }, set: { if !$0 { signEntryID = nil } })) {
             if let signEntryID {
-                SigningSheetView(entryID: signEntryID)
+                SigningSheetView(entryID: signEntryID) {
+                    // هەر کە واژووکردن تەواو بوو، پەنجەرەی ئینستاڵ چالاک دەکەین
+                    showingInstall = true
+                }
             }
         }
+        .overlay(alignment: .bottom) {
+            if showingInstall, let signEntryID {
+                InstallStatusPill(entryID: signEntryID) {
+                    showingInstall = false
+                }
+                .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
+        }
+        .animation(.spring(response: 0.35, dampingFraction: 0.85), value: showingInstall)
     }
 
     private func download(_ app: RepositoryApp) {
