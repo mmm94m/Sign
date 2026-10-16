@@ -15,11 +15,19 @@
       "category": "utilities",
       "version": "1.7.0",
       "versionDate": "2026-10-16",
-      "versionDescription": "- Update SigningOptionsEditor.swift\n- Update SigningSheetView.swift\n- Update SourcesView.swift\n- Update AltStore source for build 13\n- Update README.md\n- Update AltStore source for build 11\n- Update SourcesView.swift\n- Update AltStore source for build 10\n- Update AddSourceSheet.swift\n- Update AltStore source for build 9\n- Update SigningSheetView.swift\n- Update SourcesView.swift\n- Update AltStore source for build 7\n- Update AddCertificateSheet.swift\n- Update AltStore source for build 6\n- Update AltStore source for build 5\n- Update ChangelogView.swift\n- Update AltStore source for build 4\n- Update BugReportView.swift\n- Update AltStore source for build 3\n- Update AddCertificateSheet.swift\n- Update CertificatesView.swift\n- Update AltStore source for build 1\n- Update SettingsView.swift\n- Update AltStore source for build 35",
-      "downloadURL": "https://github.com/mmm94m/Sign/releases/download/build-16/SwiftIPA-unsigned.ipa",
-      "size": 3271374,
+      "versionDescription": "- Update build-ipa.yml\n- Update build-ipa.yml\n- Update AltStore source for build 16\n- Update SigningOptionsEditor.swift\n- Update SigningSheetView.swift\n- Update SourcesView.swift\n- Update AltStore source for build 13\n- Update README.md\n- Update AltStore source for build 11\n- Update SourcesView.swift\n- Update AltStore source for build 10\n- Update AddSourceSheet.swift\n- Update AltStore source for build 9\n- Update SigningSheetView.swift\n- Update SourcesView.swift\n- Update AltStore source for build 7\n- Update AddCertificateSheet.swift\n- Update AltStore source for build 6\n- Update AltStore source for build 5\n- Update ChangelogView.swift\n- Update AltStore source for build 4\n- Update BugReportView.swift\n- Update AltStore source for build 3\n- Update AddCertificateSheet.swift\n- Update CertificatesView.swift\n- Update AltStore source for build 1\n- Update SettingsView.swift\n- Update AltStore source for build 35",
+      "downloadURL": "https://github.com/mmm94m/Sign/releases/download/build-19/SwiftIPA-unsigned.ipa",
+      "size": 3271377,
       "minOSVersion": "16.0",
       "versions": [
+        {
+          "version": "1.7.0",
+          "date": "2026-10-16",
+          "localizedDescription": "- Update build-ipa.yml\n- Update build-ipa.yml\n- Update AltStore source for build 16\n- Update SigningOptionsEditor.swift\n- Update SigningSheetView.swift\n- Update SourcesView.swift\n- Update AltStore source for build 13\n- Update README.md\n- Update AltStore source for build 11\n- Update SourcesView.swift\n- Update AltStore source for build 10\n- Update AddSourceSheet.swift\n- Update AltStore source for build 9\n- Update SigningSheetView.swift\n- Update SourcesView.swift\n- Update AltStore source for build 7\n- Update AddCertificateSheet.swift\n- Update AltStore source for build 6\n- Update AltStore source for build 5\n- Update ChangelogView.swift\n- Update AltStore source for build 4\n- Update BugReportView.swift\n- Update AltStore source for build 3\n- Update AddCertificateSheet.swift\n- Update CertificatesView.swift\n- Update AltStore source for build 1\n- Update SettingsView.swift\n- Update AltStore source for build 35",
+          "downloadURL": "https://github.com/mmm94m/Sign/releases/download/build-19/SwiftIPA-unsigned.ipa",
+          "size": 3271377,
+          "minOSVersion": "16.0"
+        },
         {
           "version": "1.7.0",
           "date": "2026-10-16",
