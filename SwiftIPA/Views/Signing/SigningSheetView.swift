@@ -29,7 +29,7 @@ struct SigningSheetView: View {
             Form {
                 if let entry {
                     
-                    // MARK: - App Header Section (بۆ نیشاندانی ناوی یارییەکە)
+                    // MARK: - App Header Section
                     Section {
                         HStack(spacing: 16) {
                             RoundedRectangle(cornerRadius: 16, style: .continuous)
@@ -282,7 +282,7 @@ struct SigningSheetView: View {
         hasSeededDefaults = true
         options = defaultsStore.makeOptions(seededWith: entry)
         
-        // چالاککردنی ئینستاڵی ئۆتۆماتیکی بە شێوەیەکی هەمیشەیی
+        // ڕاستەوخۆ دیاریکردنی ئینستاڵکردن
         options.installAfterSigning = true
     }
 
@@ -310,9 +310,13 @@ struct SigningSheetView: View {
                 if case .failed(let message) = job.status {
                     errorMessage = message
                 } else {
+                    // ١. سەرەتا پەنجەرەی واژووکردن دادەخات
                     dismiss()
-                    // هێنانی ڕاستەوخۆی نامەی ئینستاڵکردن دوای واژووکردن
-                    onSignedSuccessfully?()
+                    
+                    // ٢. کێشەکە لێرە چارەسەر کرا: چاوەڕێی ٠.٥ چرکە دەکات تا شیتەکە بە تەواوی دادەخرێت ئینجا نامەی ئینستاڵ دەهێنێت
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        onSignedSuccessfully?()
+                    }
                 }
             }
         }
