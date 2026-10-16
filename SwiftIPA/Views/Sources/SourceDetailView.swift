@@ -9,7 +9,9 @@ struct SourceDetailView: View {
     @State private var downloadedBytes: Int64 = 0
     @State private var errorMessage: String?
     @State private var signEntryID: UUID?
-    @State private var showingInstall = false
+    
+    // گۆڕاوێک بۆ نیشاندانی پەنجەرەی ئینستاڵکردن دوای واژووکردن
+    @State private var installEntryID: UUID?
 
     private var source: RepositorySource? {
         sourceStore.sources.first { $0.id == sourceID }
@@ -41,23 +43,21 @@ struct SourceDetailView: View {
         } message: {
             Text(errorMessage ?? "")
         }
+        // پەنجەرەی واژووکردن (Sign)
         .sheet(isPresented: Binding(get: { signEntryID != nil }, set: { if !$0 { signEntryID = nil } })) {
             if let signEntryID {
-                // لێرەدا دەڵێین: دوای واژووکردن، ڕاستەوخۆshowingInstall بکەوە
                 SigningSheetView(entryID: signEntryID) {
-                    showingInstall = true
+                    // لێرەدا دەڵێین: هەر کە Sign تەواو بوو، ڕاستەوخۆ پەنجەرەی Install بکەوە!
+                    installEntryID = signEntryID
                 }
             }
         }
-        .overlay(alignment: .bottom) {
-            if showingInstall, let signEntryID {
-                InstallStatusPill(entryID: signEntryID) {
-                    showingInstall = false
-                }
-                .transition(.move(edge: .bottom).combined(with: .opacity))
+        // پەنجەرەی ئینستاڵکردنی ڕاستەوخۆ (Install Sheet)
+        .sheet(isPresented: Binding(get: { installEntryID != nil }, set: { if !$0 { installEntryID = nil } })) {
+            if let installEntryID {
+                InstallSheet(entryID: installEntryID)
             }
         }
-        .animation(.spring(response: 0.35, dampingFraction: 0.85), value: showingInstall)
     }
 
     private func download(_ app: RepositoryApp) {
