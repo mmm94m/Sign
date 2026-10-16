@@ -3,15 +3,19 @@ import UIKit
 
 struct RootTabView: View {
     @State private var importMessage: String?
+    
+    // زیادکردنی ئەم گۆڕاوە بۆ کۆنتڕۆڵکردنی تابەکان، تاوەکو بەزۆر شاشەکە نەگۆڕێت
+    @State private var selectedTab = 1
 
     var body: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
             NavigationStack {
                 LibraryView()
             }
             .tabItem {
                 Label("Library", systemImage: "square.stack.3d.up")
             }
+            .tag(0) // تابی یەکەم: Library
 
             NavigationStack {
                 SourcesView()
@@ -19,6 +23,7 @@ struct RootTabView: View {
             .tabItem {
                 Label("Sources", systemImage: "tray.full")
             }
+            .tag(1) // تابی دووەم: Sources
 
             NavigationStack {
                 SettingsView()
@@ -26,8 +31,10 @@ struct RootTabView: View {
             .tabItem {
                 Label("Settings", systemImage: "gearshape")
             }
+            .tag(2) // تابی سێیەم: Settings
         }
-        .tint(SIColor.accent)
+        .tint(.orange) // ڕەنگی مۆدێرنی پرتەقاڵی بۆ تابی خوارەوە
+        .preferredColorScheme(.dark) // دۆخی تاریکی فەرمی
         .onAppear(perform: handleForeground)
         .onOpenURL { _ in handleForeground() }
         .onReceive(NotificationCenter.default.publisher(for: UIApplication.willEnterForegroundNotification)) { _ in
@@ -69,6 +76,8 @@ struct RootTabView: View {
 
         if imported > 0 {
             importMessage = String(localized: "Brought in \(imported) app(s) shared from another app.")
+            // ئەگەر فایلت لە دەرەوە هێنایە ناوەوە، با شاشەکە خۆی بتباتە لایبری، بەڵام بۆ سۆرسەکان ناگۆڕێت
+            selectedTab = 0
         }
     }
 }
