@@ -105,6 +105,7 @@ struct AppDetailView: View {
         }
         .listStyle(.insetGrouped)
         .sheet(isPresented: $showingSigningSheet) {
+            // لێرەدا دڵنیا دەبینەوە کە هەر کە Sign سەرکەوتبوو، ڕاستەوخۆ showingInstall بکاتەوە
             SigningSheetView(entryID: entry.id) {
                 showingInstall = true
             }
