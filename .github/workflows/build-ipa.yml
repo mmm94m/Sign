@@ -82,7 +82,6 @@ jobs:
           retention-days: 14
 
       - name: Write changelog
-        # Pull requests only check that the app builds; releases come from main.
         if: github.event_name != 'pull_request'
         run: |
           PREV_TAG=$(git tag -l 'build-*' --sort=-v:refname | head -1)
@@ -117,6 +116,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -e
+          
+          # ١. سەرەتا با گۆڕانکارییە نوێیەکان ڕابکێشێت پێش ئەوەی دەستکاری فایلەکە بکات بۆ ڕێگریکردن لە کۆنفليکت
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git pull origin main --rebase --autostash
+          
+          # ٢. ئێستا دەستکاری فایلەکە دەکات
           TAG="build-${{ github.run_number }}"
           VERSION="${{ env.APP_VERSION }}"
           DATE=$(date -u +"%Y-%m-%d")
@@ -129,6 +135,7 @@ jobs:
             --arg downloadURL "$DOWNLOAD_URL" \
             --rawfile notes changes.md \
             '{version: $version, date: $date, localizedDescription: $notes, downloadURL: $downloadURL, size: $size, minOSVersion: "16.0"}')
+          
           jq --argjson v "$NEW_VERSION" '
             .apps[0].versions = [$v] + .apps[0].versions |
             .apps[0].version = $v.version |
@@ -138,13 +145,12 @@ jobs:
             .apps[0].size = $v.size
           ' altstore-source.json > altstore-source.tmp.json
           mv altstore-source.tmp.json altstore-source.json
+          
+          # ٣. لە کۆتاییدا فایلە نوێیەکە سەیڤ دەکات و دەینێرێت
           if git diff --quiet -- altstore-source.json; then
             echo "No changes to altstore-source.json"
           else
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add altstore-source.json
             git commit -m "Update AltStore source for build ${{ github.run_number }}"
-            git pull origin main --rebase --autostash
             git push origin HEAD:main
           fi
