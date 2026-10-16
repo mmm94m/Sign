@@ -54,21 +54,24 @@ struct SigningOptionsEditor: View {
                         layout: .advancedOnly
                     )
                 }
+                .formStyle(.grouped) // ستایلی مۆدێرن بۆ پەڕەی More Options
                 .siScreen()
                 .navigationTitle("More Options")
                 .navigationBarTitleDisplayMode(.inline)
+                .preferredColorScheme(.dark)
             } label: {
                 HStack {
                     Text("More Options")
                     Spacer()
                     if changedOptionCount > 0 {
                         Text("\(changedOptionCount) changed")
-                            .foregroundStyle(SIColor.textSecondary)
+                            .foregroundStyle(.secondary)
                     }
                 }
             }
             if showsInstallToggle {
                 Toggle("Install After Signing", isOn: $options.installAfterSigning)
+                    .tint(.orange)
             }
         } footer: {
             Text("Appearance, compatibility, removal, network, entitlements and speed settings.")
@@ -114,7 +117,9 @@ struct SigningOptionsEditor: View {
                 }
             }
         } header: {
-            Text("Appearance")
+            Text("APPEARANCE")
+                .font(.footnote)
+                .foregroundColor(.secondary)
         } footer: {
             Text("Design forces an app to use, or not use, iOS 26's Liquid Glass redesign. Not every app supports being switched either way.")
         }
@@ -129,7 +134,9 @@ struct SigningOptionsEditor: View {
             Toggle("Force Game Mode", isOn: $options.forceGameMode)
             Toggle("Force Localized Display Name", isOn: $options.forceLocalizedDisplayName)
         } header: {
-            Text("Compatibility")
+            Text("COMPATIBILITY")
+                .font(.footnote)
+                .foregroundColor(.secondary)
         } footer: {
             Text("Force Localized Display Name overrides the app name shown under every language the app supports, not just the default one.")
         }
@@ -143,7 +150,9 @@ struct SigningOptionsEditor: View {
             Toggle("Remove Localizations Except English", isOn: $options.removeLocalizations)
             Toggle("Remove URL Schemes", isOn: $options.removeURLSchemes)
         } header: {
-            Text("Removal")
+            Text("REMOVAL")
+                .font(.footnote)
+                .foregroundColor(.secondary)
         }
     }
 
@@ -151,7 +160,9 @@ struct SigningOptionsEditor: View {
         Section {
             Toggle("Allow Arbitrary Network Loads", isOn: $options.allowArbitraryLoads)
         } header: {
-            Text("Network")
+            Text("NETWORK")
+                .font(.footnote)
+                .foregroundColor(.secondary)
         }
     }
 
@@ -180,22 +191,29 @@ struct SigningOptionsEditor: View {
                 showingTweakPicker = true
             } label: {
                 if isImportingTweak {
-                    HStack(spacing: SISpacing.sm) {
-                        ProgressView()
+                    HStack(spacing: 12) {
+                        ProgressView().tint(.orange)
                         Text("Importing…")
                     }
                 } else {
-                    Label("Add .dylib or .deb", systemImage: "plus")
+                    HStack(spacing: 12) {
+                        Image(systemName: "plus")
+                            .font(.body.weight(.semibold))
+                        Text("Add .dylib or .deb")
+                    }
                 }
             }
             .disabled(isImportingTweak)
+            .foregroundColor(.orange) // ڕەنگی پرتەقاڵی بۆ دوگمەی ئادکردنی تویک
 
             if !injectableTweaks.isEmpty {
                 Toggle("Inject Weakly", isOn: $options.weakInjection)
                 Toggle("Inject into Extensions", isOn: $options.injectIntoExtensions)
             }
         } header: {
-            Text("Tweaks")
+            Text("TWEAKS")
+                .font(.footnote)
+                .foregroundColor(.secondary)
         } footer: {
             if let provider = dylibStore.substrateProvider {
                 Text("\(provider.displayName) is added automatically when a tweak needs CydiaSubstrate.")
@@ -254,11 +272,13 @@ struct SigningOptionsEditor: View {
                     Text("Entitlements")
                     Spacer()
                     Text(options.entitlements == nil ? String(localized: "From Provisioning Profile") : String(localized: "Customized"))
-                        .foregroundStyle(SIColor.textSecondary)
+                        .foregroundStyle(.secondary)
                 }
             }
         } header: {
-            Text("Entitlements")
+            Text("ENTITLEMENTS")
+                .font(.footnote)
+                .foregroundColor(.secondary)
         } footer: {
             Text("Leave this untouched to sign with the entitlements baked into your provisioning profile.")
         }
@@ -271,9 +291,12 @@ struct SigningOptionsEditor: View {
             Toggle("Force Re-sign (skip zsign's own cache)", isOn: $options.stripExistingSignature)
             if showsInstallToggle && layout != .advancedOnly {
                 Toggle("Install After Signing", isOn: $options.installAfterSigning)
+                    .tint(.orange)
             }
         } header: {
-            Text("Speed")
+            Text("SPEED")
+                .font(.footnote)
+                .foregroundColor(.secondary)
         } footer: {
             Text("Fast Packaging skips compressing the signed IPA. Signing finishes a lot quicker, the IPA just takes more space.")
         }
