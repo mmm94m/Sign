@@ -281,6 +281,9 @@ struct SigningSheetView: View {
         guard !hasSeededDefaults else { return }
         hasSeededDefaults = true
         options = defaultsStore.makeOptions(seededWith: entry)
+        
+        // چالاککردنی ئینستاڵی ئۆتۆماتیکی بە شێوەیەکی هەمیشەیی
+        options.installAfterSigning = true
     }
 
     private func sign() {
@@ -307,11 +310,9 @@ struct SigningSheetView: View {
                 if case .failed(let message) = job.status {
                     errorMessage = message
                 } else {
-                    let shouldInstall = options.installAfterSigning
                     dismiss()
-                    if shouldInstall {
-                        onSignedSuccessfully?()
-                    }
+                    // هێنانی ڕاستەوخۆی نامەی ئینستاڵکردن دوای واژووکردن
+                    onSignedSuccessfully?()
                 }
             }
         }
