@@ -17,6 +17,9 @@ struct SigningSheetView: View {
     @State private var errorMessage: String?
     @State private var showingSavePreset = false
     @State private var hasSeededDefaults = false
+    
+    // ئەمە کێشەکە چارەسەر دەکات: گۆڕاوێک بۆ چاوەڕێکردنی داخرانی شیتەکە
+    @State private var triggerInstallOnDisappear = false
 
     @Environment(\.dismiss) private var dismiss
 
@@ -106,6 +109,12 @@ struct SigningSheetView: View {
                 }
             }
             .onAppear(perform: prepareDefaults)
+            // لێرەدا فەرمان دەدەین: کاتێک پەنجەرەکە بە تەواوی دیار نەما، ئینجا نامەی ئینستاڵ بهێنە!
+            .onDisappear {
+                if triggerInstallOnDisappear {
+                    onSignedSuccessfully?()
+                }
+            }
             .alert("Signing Failed", isPresented: Binding(get: { errorMessage != nil }, set: { if !$0 { errorMessage = nil } })) {
                 Button("OK") { errorMessage = nil }
             } message: {
@@ -282,7 +291,6 @@ struct SigningSheetView: View {
         hasSeededDefaults = true
         options = defaultsStore.makeOptions(seededWith: entry)
         
-        // ڕاستەوخۆ دیاریکردنی ئینستاڵکردن
         options.installAfterSigning = true
     }
 
@@ -310,13 +318,13 @@ struct SigningSheetView: View {
                 if case .failed(let message) = job.status {
                     errorMessage = message
                 } else {
-                    // ١. سەرەتا پەنجەرەی واژووکردن دادەخات
-                    dismiss()
-                    
-                    // ٢. کێشەکە لێرە چارەسەر کرا: چاوەڕێی ٠.٥ چرکە دەکات تا شیتەکە بە تەواوی دادەخرێت ئینجا نامەی ئینستاڵ دەهێنێت
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        onSignedSuccessfully?()
+                    // ئامادەکردنی فەرمانی ئینستاڵکردن
+                    if options.installAfterSigning {
+                        triggerInstallOnDisappear = true
                     }
+                    
+                    // داخستنی پەنجەرەکە
+                    dismiss()
                 }
             }
         }
