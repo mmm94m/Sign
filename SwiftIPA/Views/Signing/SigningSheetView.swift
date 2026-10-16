@@ -28,24 +28,30 @@ struct SigningSheetView: View {
         NavigationStack {
             Form {
                 if let entry {
+                    // 1. Mɔdan hɛda we de sho di Ap Logo ɛn Nem
+                    appHeaderSection(entry: entry)
+                    
                     if isSigning {
                         progressSection
                             .transition(.opacity.combined(with: .move(edge: .top)))
                     }
                     
+                    // 2. Sɛkshɔn fɔ Sɛtifiket
                     certificateSection
                     
+                    // 3. Sɛkshɔn fɔ Aydɛntiti
                     identitySection(entry: entry)
                     
-                    // بەشی خوارەوە کە Tweaks و هەڵبژاردنەکانی تێدایە
+                    // 4. Mɔ Opshɔn dɛn ɛn Twik dɛn
                     SigningOptionsEditor(options: $options, certificateID: certificateID, layout: .compact)
                 }
             }
-            .formStyle(.grouped) // ستایلی فەرمی ئەپڵ
-            .tint(.orange) // هەموو شتێک دەکات بە پرتەقاڵی
+            .formStyle(.grouped)
+            .tint(.orange)
+            .background(Color(UIColor.systemGroupedBackground))
             .animation(.easeOut(duration: 0.25), value: isSigning)
             .presentationDragIndicator(.visible)
-            .navigationTitle("Sign")
+            .navigationTitle("Sign App")
             .navigationBarTitleDisplayMode(.inline)
             .disabled(isSigning)
             .toolbar {
@@ -63,7 +69,8 @@ struct SigningSheetView: View {
                         if isSigning {
                             ProgressView().tint(.orange)
                         } else {
-                            Text("Sign").fontWeight(.bold)
+                            Text("Sign")
+                                .fontWeight(.bold)
                         }
                     }
                     .disabled(certificateID == nil || isSigning)
@@ -85,6 +92,53 @@ struct SigningSheetView: View {
         .preferredColorScheme(.dark)
     }
 
+    // MARK: - App Header Section (Nyu Mɔdan Dizayn)
+    @ViewBuilder
+    private func appHeaderSection(entry: AppEntry) -> some View {
+        HStack(spacing: 16) {
+            AsyncImage(url: entry.iconURL) { phase in
+                if let image = phase.image {
+                    image
+                        .resizable()
+                        .scaledToFill()
+                } else {
+                    RoundedRectangle(cornerRadius: 18, style: .continuous)
+                        .fill(Color(UIColor.secondarySystemFill))
+                        .overlay(
+                            Image(systemName: "app.dashed")
+                                .font(.system(size: 24))
+                                .foregroundColor(.gray)
+                        )
+                }
+            }
+            .frame(width: 70, height: 70)
+            .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .shadow(color: .black.opacity(0.2), radius: 5, x: 0, y: 3)
+
+            VStack(alignment: .leading, spacing: 6) {
+                Text(entry.name)
+                    .font(.title3)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+                    .lineLimit(2)
+                
+                Text("Version \(entry.version)")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 2)
+                    .background(Color.orange.opacity(0.15))
+                    .foregroundColor(.orange)
+                    .clipShape(Capsule())
+            }
+            Spacer()
+        }
+        .padding(.vertical, 10)
+        .listRowBackground(Color.clear) // Dis de mek di hɛda luk speshal pan di form
+        .listRowSeparator(.hidden)
+    }
+
+    // MARK: - Presets
     private var presetMenu: some View {
         Menu {
             if !presetStore.presets.isEmpty {
@@ -109,10 +163,10 @@ struct SigningSheetView: View {
         }
     }
 
+    // MARK: - Certificate Section
     private var certificateSection: some View {
         Group {
             if certificateStore.certificates.isEmpty {
-                // دیزاینێکی زۆر پرۆفێشناڵ بۆ ئاگادارکردنەوەی بڕوانامە
                 Section {
                     HStack(spacing: 12) {
                         Image(systemName: "exclamationmark.triangle.fill")
@@ -122,7 +176,7 @@ struct SigningSheetView: View {
                             .fontWeight(.medium)
                     }
                     .foregroundColor(.red)
-                    .listRowBackground(Color.red.opacity(0.15))
+                    .padding(.vertical, 4)
                 }
             } else {
                 Section {
@@ -144,6 +198,7 @@ struct SigningSheetView: View {
         certificateStore.profileBundleIdentifier(forCertificateID: certificateID)
     }
 
+    // MARK: - Identity Section
     private func identitySection(entry: AppEntry) -> some View {
         let original = entry.originalBundleIdentifier ?? entry.bundleIdentifier
         return Section {
@@ -214,6 +269,7 @@ struct SigningSheetView: View {
         .foregroundColor(.secondary)
     }
 
+    // MARK: - Progress Section
     private var progressSection: some View {
         Section {
             HStack(spacing: 12) {
@@ -241,6 +297,7 @@ struct SigningSheetView: View {
         }
     }
 
+    // MARK: - Logic
     private func prepareDefaults() {
         guard let entry else { return }
         certificateID = certificateStore.defaultCertificateID ?? certificateStore.certificates.first?.id
