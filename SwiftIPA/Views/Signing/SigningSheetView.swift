@@ -34,16 +34,15 @@ struct SigningSheetView: View {
                         progressSection
                             .transition(.opacity.combined(with: .move(edge: .top)))
                     }
-                    
                     certificateSection
-                    
                     identitySection(entry: entry)
                     
-                    // ئەم بەشە خۆی Tweaks و More Options لەخۆدەگرێت
+                    // تێبینی: دیزاینی بەشی خوارەوەی Sign لەناو ئەم فایلەدایە 
                     SigningOptionsEditor(options: $options, certificateID: certificateID, layout: .compact)
                 }
             }
-            .formStyle(.grouped) // بەکارهێنانی ستایلی فەرمی فۆڕمەکان بۆ دیزاینێکی مۆدێرن
+            .tint(.orange) // ئەمە هەموو دوگمە و تۆگڵەکان دەکات بە پرتەقاڵی
+            .formStyle(.grouped)
             .animation(.easeOut(duration: 0.25), value: isSigning)
             .siScreen()
             .presentationDragIndicator(.visible)
@@ -51,9 +50,9 @@ struct SigningSheetView: View {
             .navigationBarTitleDisplayMode(.inline)
             .disabled(isSigning)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
-                        .foregroundColor(.orange) // ڕەنگی پرتەقاڵی بۆ دوگمەی کانسەڵ
+                        .foregroundColor(.orange)
                 }
                 ToolbarItem(placement: .primaryAction) {
                     presetMenu
@@ -63,14 +62,13 @@ struct SigningSheetView: View {
                         sign()
                     } label: {
                         if isSigning {
-                            ProgressView()
+                            ProgressView().tint(.orange)
                         } else {
-                            Text("Sign")
-                                .fontWeight(.semibold)
+                            Text("Sign").fontWeight(.semibold)
                         }
                     }
                     .disabled(certificateID == nil || isSigning)
-                    .foregroundColor((certificateID == nil || isSigning) ? .gray : .orange) // ڕەنگی دوگمەی Sign بەپێی کات دەگۆڕێت
+                    .foregroundColor((certificateID == nil || isSigning) ? .gray : .orange)
                 }
             }
             .onAppear(perform: prepareDefaults)
@@ -85,7 +83,7 @@ struct SigningSheetView: View {
                 }
             }
         }
-        .preferredColorScheme(.dark) // بۆ دڵنیابوون لەوەی هەمیشە وەک وێنەکە تاریک دەبێت
+        .preferredColorScheme(.dark)
     }
 
     private var presetMenu: some View {
@@ -108,33 +106,26 @@ struct SigningSheetView: View {
             }
         } label: {
             Image(systemName: "slider.horizontal.3")
-                .foregroundColor(.orange) // ئایکۆنی ڕێکخستنەکان بە ڕەنگی پرتەقاڵی
+                .foregroundColor(.orange)
         }
         .accessibilityLabel(Text("Presets"))
     }
 
     private var certificateSection: some View {
-        Group {
+        Section {
             if certificateStore.certificates.isEmpty {
-                Section {
+                HStack {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(.red)
                     Text("Add a certificate in Settings first.")
-                        .font(.footnote)
-                        .foregroundColor(.red) // دیزاینی سوور ڕێک وەک وێنەکە
+                        .font(.subheadline)
+                        .foregroundColor(.red)
                 }
             } else {
-                Section {
-                    Picker("Certificate", selection: $certificateID) {
-                        ForEach(certificateStore.certificates) { certificate in
-                            Text(certificate.name)
-                                .tag(UUID?.some(certificate.id))
-                        }
+                Picker("Certificate", selection: $certificateID) {
+                    ForEach(certificateStore.certificates) { certificate in
+                        Text(certificate.name).tag(UUID?.some(certificate.id))
                     }
-                    .tint(.orange)
-                } header: {
-                    Text("CERTIFICATE")
-                        .font(.footnote)
-                        .foregroundColor(.secondary)
-                        .textCase(.uppercase)
                 }
             }
         }
@@ -155,7 +146,6 @@ struct SigningSheetView: View {
                     Text(rule.displayName).tag(rule)
                 }
             }
-            .tint(.orange) // ڕەنگی هەڵبژاردنەکان (وەک Keep Original) بە پرتەقاڵی
 
             switch options.bundleIdentifierRule {
             case .appendSuffix:
@@ -191,7 +181,6 @@ struct SigningSheetView: View {
             Text("IDENTITY")
                 .font(.footnote)
                 .foregroundColor(.secondary)
-                .textCase(.uppercase)
         } footer: {
             identityFooter(original: original)
         }
@@ -226,8 +215,7 @@ struct SigningSheetView: View {
         Section {
             HStack(spacing: 12) {
                 if jobStatus.isInProgress {
-                    ProgressView()
-                        .tint(.orange)
+                    ProgressView().tint(.orange)
                 }
                 signingProgressFooter
                     .transition(.opacity)
@@ -247,11 +235,9 @@ struct SigningSheetView: View {
         case .cached: Text("Found an identical signed build in cache — skipping re-sign…")
         case .done(let seconds):
             if seconds < 0.05 {
-                Text("Done instantly from cache.")
-                    .foregroundColor(.green)
+                Text("Done instantly from cache.").foregroundColor(.green)
             } else {
-                Text(String(format: String(localized: "Done in %.1fs."), seconds))
-                    .foregroundColor(.green)
+                Text(String(format: String(localized: "Done in %.1fs."), seconds)).foregroundColor(.green)
             }
         case .failed(let message): Text(message).foregroundColor(.red)
         }
