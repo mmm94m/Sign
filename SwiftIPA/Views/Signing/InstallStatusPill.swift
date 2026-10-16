@@ -8,23 +8,23 @@ struct InstallStatusPill: View {
     @State private var backgroundLoadURL: URL?
 
     var body: some View {
-        HStack(spacing: SISpacing.md) {
+        HStack(spacing: 16) {
             icon
-                .frame(width: 28, height: 28)
+                .frame(width: 32, height: 32)
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(title)
-                    .font(SIFont.headline)
-                    .foregroundStyle(SIColor.textPrimary)
+                    .font(.headline)
+                    .foregroundColor(.primary)
                 if let detail {
                     Text(detail)
-                        .font(SIFont.caption)
-                        .foregroundStyle(SIColor.textSecondary)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                         .lineLimit(4)
                 }
                 if case .sendingPayload(let fraction) = status {
                     ProgressView(value: fraction)
-                        .tint(SIColor.accent)
+                        .tint(.orange) // ڕەنگی مۆدێرنی پرتەقاڵی
                 }
             }
 
@@ -34,19 +34,19 @@ struct InstallStatusPill: View {
                 onClose()
             } label: {
                 Image(systemName: "xmark")
-                    .font(.system(size: 13, weight: .bold))
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(.secondary)
                     .padding(8)
-                    .background(SIColor.surface)
+                    .background(Color(UIColor.tertiarySystemFill))
                     .clipShape(Circle())
             }
-            .buttonStyle(.siIcon)
         }
-        .padding(SISpacing.md)
-        .background(SIColor.surfaceElevated)
-        .clipShape(RoundedRectangle(cornerRadius: SIRadius.lg, style: .continuous))
-        .shadow(color: .black.opacity(0.18), radius: 12, x: 0, y: 4)
-        .padding(.horizontal, SISpacing.md)
-        .padding(.bottom, SISpacing.sm)
+        .padding(16)
+        .background(Color(UIColor.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .shadow(color: .black.opacity(0.2), radius: 15, x: 0, y: 5)
+        .padding(.horizontal, 16)
+        .padding(.bottom, 16)
         .animation(.easeOut(duration: 0.25), value: status)
         .background {
             if let backgroundLoadURL {
@@ -75,19 +75,19 @@ struct InstallStatusPill: View {
         switch status {
         case .preparing, .waitingForSystem:
             ProgressView()
-                .tint(SIColor.accent)
+                .tint(.orange)
         case .sendingPayload:
             Image(systemName: "arrow.up.circle.fill")
-                .font(.system(size: 26))
-                .foregroundStyle(SIColor.accent)
+                .font(.system(size: 32))
+                .foregroundColor(.orange)
         case .installing:
             Image(systemName: "checkmark.circle.fill")
-                .font(.system(size: 26))
-                .foregroundStyle(SIColor.success)
+                .font(.system(size: 32))
+                .foregroundColor(.green)
         case .failed:
             Image(systemName: "exclamationmark.triangle.fill")
-                .font(.system(size: 24))
-                .foregroundStyle(SIColor.danger)
+                .font(.system(size: 32))
+                .foregroundColor(.red)
         }
     }
 
