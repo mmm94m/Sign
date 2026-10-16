@@ -16,8 +16,6 @@ struct SigningSheetView: View {
     @State private var jobStatus: SigningJobStatus = .queued
     @State private var errorMessage: String?
     @State private var showingSavePreset = false
-    @State private var presetName = ""
-    @State private var showingIconPicker = false
     @State private var hasSeededDefaults = false
 
     @Environment(\.dismiss) private var dismiss
@@ -30,24 +28,65 @@ struct SigningSheetView: View {
         NavigationStack {
             Form {
                 if let entry {
+                    
+                    // MARK: - App Header Section (بۆ نیشاندانی ناوی یارییەکە)
+                    Section {
+                        HStack(spacing: 16) {
+                            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                .fill(Color(UIColor.secondarySystemFill))
+                                .frame(width: 65, height: 65)
+                                .overlay(
+                                    Image(systemName: "app.fill")
+                                        .font(.system(size: 30))
+                                        .foregroundColor(.orange)
+                                )
+
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(entry.name)
+                                    .font(.title3)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(.primary)
+                                    .lineLimit(2)
+                                
+                                Text("Ready to Sign")
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 4)
+                                    .background(Color.orange.opacity(0.15))
+                                    .foregroundColor(.orange)
+                                    .clipShape(Capsule())
+                            }
+                            Spacer()
+                        }
+                        .padding(.vertical, 4)
+                    }
+                    .listRowBackground(Color.clear)
+                    
                     if isSigning {
                         progressSection
                             .transition(.opacity.combined(with: .move(edge: .top)))
                     }
+                    
                     certificateSection
+                    
                     identitySection(entry: entry)
+                    
                     SigningOptionsEditor(options: $options, certificateID: certificateID, layout: .compact)
                 }
             }
+            .formStyle(.grouped)
+            .tint(.orange)
+            .background(Color(UIColor.systemGroupedBackground))
             .animation(.easeOut(duration: 0.25), value: isSigning)
-            .siScreen()
             .presentationDragIndicator(.visible)
             .navigationTitle("Sign")
             .navigationBarTitleDisplayMode(.inline)
             .disabled(isSigning)
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
+                ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") { dismiss() }
+                        .foregroundColor(.orange)
                 }
                 ToolbarItem(placement: .primaryAction) {
                     presetMenu
@@ -57,12 +96,13 @@ struct SigningSheetView: View {
                         sign()
                     } label: {
                         if isSigning {
-                            ProgressView()
+                            ProgressView().tint(.orange)
                         } else {
-                            Text("Sign")
+                            Text("Sign").fontWeight(.bold)
                         }
                     }
                     .disabled(certificateID == nil || isSigning)
+                    .foregroundColor((certificateID == nil || isSigning) ? .gray : .orange)
                 }
             }
             .onAppear(perform: prepareDefaults)
@@ -77,6 +117,7 @@ struct SigningSheetView: View {
                 }
             }
         }
+        .preferredColorScheme(.dark)
     }
 
     private var presetMenu: some View {
@@ -99,22 +140,35 @@ struct SigningSheetView: View {
             }
         } label: {
             Image(systemName: "slider.horizontal.3")
+                .foregroundColor(.orange)
         }
-        .accessibilityLabel(Text("Presets"))
     }
 
     private var certificateSection: some View {
-        Section {
+        Group {
             if certificateStore.certificates.isEmpty {
-                Text("Add a certificate in Settings first.")
-                    .font(SIFont.caption)
-                    .foregroundStyle(SIColor.danger)
-            } else {
-                Picker("Certificate", selection: $certificateID) {
-                    ForEach(certificateStore.certificates) { certificate in
-                        Text(certificate.name)
-                            .tag(UUID?.some(certificate.id))
+                Section {
+                    HStack(spacing: 12) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.title3)
+                        Text("Add a certificate in Settings first.")
+                            .font(.callout)
+                            .fontWeight(.medium)
                     }
+                    .foregroundColor(.red)
+                    .listRowBackground(Color.red.opacity(0.15))
+                }
+            } else {
+                Section {
+                    Picker("Certificate", selection: $certificateID) {
+                        ForEach(certificateStore.certificates) { certificate in
+                            Text(certificate.name).tag(UUID?.some(certificate.id))
+                        }
+                    }
+                } header: {
+                    Text("CERTIFICATE")
+                        .font(.footnote)
+                        .foregroundColor(.secondary)
                 }
             }
         }
@@ -149,7 +203,7 @@ struct SigningSheetView: View {
                     Button {
                         options.bundleIdentifier = SigningOptions.bundleIdentifier(fromCertificateID: certificateBundleID, original: original)
                     } label: {
-                        Label("Use Bundle ID from Certificate", systemImage: "checkmark.seal")
+                        Label("Use Bundle ID from Certificate", systemImage: "checkmark.seal.fill")
                     }
                 }
             default:
@@ -166,7 +220,9 @@ struct SigningSheetView: View {
             TextField("Minimum iOS Version", text: $options.minimumOSVersion)
                 .keyboardType(.numbersAndPunctuation)
         } header: {
-            Text("Identity")
+            Text("IDENTITY")
+                .font(.footnote)
+                .foregroundColor(.secondary)
         } footer: {
             identityFooter(original: original)
         }
@@ -174,7 +230,7 @@ struct SigningSheetView: View {
 
     @ViewBuilder
     private func identityFooter(original: String) -> some View {
-        VStack(alignment: .leading, spacing: 2) {
+        VStack(alignment: .leading, spacing: 4) {
             if options.bundleIdentifierRule == .randomSuffix {
                 Text("Original bundle ID: \(original)")
             } else {
@@ -186,25 +242,20 @@ struct SigningSheetView: View {
             }
             if let certificateBundleID {
                 Text("Certificate bundle ID: \(certificateBundleID)")
-                if options.bundleIdentifierRule == .fromCertificate, certificateBundleID == "*" {
-                    Text("This certificate is a wildcard, so the original bundle ID is kept.")
-                }
-            } else if options.bundleIdentifierRule == .fromCertificate {
-                Text("Couldn't read a bundle ID from this certificate's profile, so the original is kept.")
             }
         }
+        .font(.caption)
+        .foregroundColor(.secondary)
     }
 
     private var progressSection: some View {
         Section {
-            HStack(spacing: SISpacing.sm) {
+            HStack(spacing: 12) {
                 if jobStatus.isInProgress {
-                    ProgressView()
+                    ProgressView().tint(.orange)
                 }
                 signingProgressFooter
-                    .transition(.opacity)
             }
-            .animation(.easeOut(duration: 0.2), value: jobStatus)
         }
     }
 
@@ -216,14 +267,11 @@ struct SigningSheetView: View {
         case .patching: Text("Applying modifiers…")
         case .signing: Text("Signing with zsign…")
         case .packaging: Text("Repacking IPA…")
-        case .cached: Text("Found an identical signed build in cache — skipping re-sign…")
+        case .cached: Text("Found identical build in cache…")
         case .done(let seconds):
-            if seconds < 0.05 {
-                Text("Done instantly from cache.")
-            } else {
-                Text(String(format: String(localized: "Done in %.1fs."), seconds))
-            }
-        case .failed(let message): Text(message).foregroundStyle(SIColor.danger)
+            Text(String(format: "Done in %.1fs.", seconds)).foregroundColor(.green)
+        case .failed(let message): 
+            Text(message).foregroundColor(.red)
         }
     }
 
